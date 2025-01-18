@@ -1,8 +1,14 @@
 <script setup lang="ts">
-const { signIn } = useAuth()
+const { signInWithGoogle } = useFirebaseAuth()
+const router = useRouter()
 
-const handleGoogleLogin = () => {
-  signIn('google', { callbackUrl: '/activity' })
+const handleGoogleLogin = async () => {
+  try {
+    await signInWithGoogle()
+    router.push('/activity')
+  } catch (error) {
+    console.error('Login failed:', error)
+  }
 }
 </script>
 

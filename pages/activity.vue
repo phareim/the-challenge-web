@@ -1,6 +1,10 @@
 <script setup lang="ts">
 import type { Activity } from '~/types/activity'
 
+definePageMeta({
+  middleware: ['auth']
+})
+
 const activities = useActivities()
 const currentDate = ref(new Date())
 const loading = ref(true)
