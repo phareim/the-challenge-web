@@ -1,6 +1,16 @@
-import { defineEventHandler, getQuery, readBody, createError } from '#imports'
-import { CreateActivityDTO } from '~/types/activity'
-import { activities, calculateTotalScore } from '~/server/utils/activities-store'
+import { defineEventHandler, getQuery, readBody, createError } from 'h3'
+import { Activity, CreateActivityDTO } from '~/types/activity'
+
+// In-memory store
+const activities = new Map<string, Activity>()
+
+// Helper function to calculate total score
+const calculateTotalScore = (score: Activity['score']): number => {
+  const basePoints = 4
+  const deductions = score.badMeals + score.alcohol + score.snacks
+  const bonusPoints = (score.exercise ? 1 : 0) + (score.greens ? 1 : 0)
+  return Math.max(0, basePoints - deductions) + bonusPoints
+}
 
 export default defineEventHandler(async (event) => {
   // Handle GET requests
@@ -31,7 +41,7 @@ export default defineEventHandler(async (event) => {
       })
     }
 
-    const newActivity = {
+    const newActivity: Activity = {
       id: crypto.randomUUID(),
       date: body.date,
       score: body.score,
@@ -41,4 +51,7 @@ export default defineEventHandler(async (event) => {
     activities.set(body.date, newActivity)
     return newActivity
   }
-}) 
+})
+
+// Export activities map for use in other handlers
+export { activities } 

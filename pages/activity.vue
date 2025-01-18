@@ -24,12 +24,20 @@ const isToday = computed(() => {
   return currentDate.value.toDateString() === today.toDateString()
 })
 
-const score = ref({
+// Default score state
+const defaultScore = {
   badMeals: 0,
   alcohol: 0,
   snacks: 0,
   exercise: false,
   greens: false
+}
+
+const score = ref({ ...defaultScore })
+
+// Watch for date changes
+watch(dateKey, async () => {
+  await loadActivityForDate()
 })
 
 // Auto-save when score changes
@@ -38,30 +46,33 @@ watch(score, async () => {
 }, { deep: true })
 
 // Navigate between days
-const changeDate = async (days: number) => {
+const changeDate = (days: number) => {
   const newDate = new Date(currentDate.value)
   newDate.setDate(newDate.getDate() + days)
   currentDate.value = newDate
-  await loadActivityForDate()
 }
 
 const loadActivityForDate = async () => {
   loading.value = true
   try {
+    console.log('Loading activity for date:', dateKey.value)
     const activity = await activities.getActivity(dateKey.value)
     if (activity) {
+      // Use existing activity
       score.value = { ...activity.score }
     } else {
-      score.value = {
-        badMeals: 0,
-        alcohol: 0,
-        snacks: 0,
-        exercise: false,
-        greens: false
-      }
+      // Create new activity with default score and wait for the response
+      const newActivity = await activities.createActivity({
+        date: dateKey.value,
+        score: defaultScore
+      })
+      // Update the UI with the saved data
+      score.value = { ...newActivity.score }
     }
   } catch (error) {
     console.error('Failed to load activity:', error)
+    // On error, reset to default score
+    score.value = { ...defaultScore }
   } finally {
     loading.value = false
   }
@@ -102,17 +113,9 @@ const saveScore = async () => {
   
   saving.value = true
   try {
-    const activity = await activities.getActivity(dateKey.value)
-    if (activity) {
-      await activities.updateActivity(dateKey.value, {
-        score: score.value
-      })
-    } else {
-      await activities.createActivity({
-        date: dateKey.value,
-        score: score.value
-      })
-    }
+    await activities.updateActivity(dateKey.value, {
+      score: score.value
+    })
   } catch (error) {
     console.error('Failed to save activity:', error)
   } finally {
