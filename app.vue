@@ -30,15 +30,15 @@
             <span class="text-sm">Log</span>
           </NuxtLink>
           <NuxtLink 
-            to="/explore" 
+            to="/history" 
             class="flex flex-col items-center p-2 rounded-xl transition-all duration-200"
             :class="{ 
-              'text-gray-400 dark:text-gray-500 hover:text-blue-600 dark:hover:text-blue-400': $route.path !== '/explore',
-              'text-blue-600 dark:text-blue-400 scale-110 font-medium': $route.path === '/explore'
+              'text-gray-400 dark:text-gray-500 hover:text-blue-600 dark:hover:text-blue-400': $route.path !== '/history',
+              'text-blue-600 dark:text-blue-400 scale-110 font-medium': $route.path === '/history'
             }"
           >
-            <span class="text-xl mb-1 transition-transform" :class="{ 'scale-110': $route.path === '/explore' }">📊</span>
-            <span class="text-sm">Explore</span>
+            <span class="text-xl mb-1 transition-transform" :class="{ 'scale-110': $route.path === '/history' }">📊</span>
+            <span class="text-sm">History</span>
           </NuxtLink>
           <NuxtLink 
             to="/profile" 

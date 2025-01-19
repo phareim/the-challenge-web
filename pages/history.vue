@@ -113,7 +113,7 @@ onMounted(() => {
         ← Back to Activity
       </NuxtLink>
       
-      <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100">Explore Your Journey</h1>
+      <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100">Activity History</h1>
       
       <div class="w-8"></div>
     </div>
@@ -135,7 +135,7 @@ onMounted(() => {
     <div v-else-if="processedActivities" class="space-y-6">
       <!-- Activity Calendar -->
       <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
-        <h3 class="font-bold text-gray-800 dark:text-gray-100 mb-4">Activity History</h3>
+        <h3 class="font-bold text-gray-800 dark:text-gray-100 mb-4">Activity Calendar</h3>
         <div class="grid grid-cols-7 gap-2">
           <template v-for="score in processedActivities.dailyScores" :key="score.date">
             <button 

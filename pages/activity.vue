@@ -52,6 +52,9 @@ const isToday = computed(() => {
   return currentDate.value.toDateString() === today.toDateString()
 })
 
+// Add minimum date constant
+const MIN_DATE = new Date('2025-01-01')
+
 // Load activity data
 const loadActivityForDate = async () => {
   if (!user.value) return
@@ -90,13 +93,24 @@ const saveScore = async () => {
   }
 }
 
-// Navigation
+// Update changeDate function
 const changeDate = (days: number) => {
   const newDate = new Date(currentDate.value)
   newDate.setDate(newDate.getDate() + days)
+  
+  // Check if new date would be before minimum date
+  if (newDate < MIN_DATE) {
+    return // Don't allow navigation before minimum date
+  }
+  
   const dateString = newDate.toISOString().split('T')[0]
   navigateTo(`/activity?date=${dateString}`)
 }
+
+// Add computed property to check if we're at minimum date
+const isMinDate = computed(() => {
+  return currentDate.value.toDateString() === MIN_DATE.toDateString()
+})
 
 // Watch effects
 watch(() => route.query.date, (newDate) => {
@@ -177,9 +191,9 @@ onUnmounted(() => {
       <button 
         @click="changeDate(-1)"
         class="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
-        :disabled="loading"
+        :disabled="loading || isMinDate"
       >
-        <span class="text-xl">←</span>
+        <span class="text-xl" :class="{ 'opacity-50': isMinDate }">←</span>
       </button>
       
       <div class="text-center">
@@ -187,7 +201,7 @@ onUnmounted(() => {
           {{ formattedDate }}
         </h1>
         <span class="text-sm text-gray-500 dark:text-gray-400" v-if="!isToday">
-          Tap arrows to navigate
+          {{ isMinDate ? 'Earliest available date' : 'Tap arrows to navigate' }}
         </span>
         <span class="text-sm text-blue-500 dark:text-blue-400 font-medium" v-else>
           Today

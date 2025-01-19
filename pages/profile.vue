@@ -39,24 +39,40 @@ onMounted(() => {
 const stats = computed(() => {
   if (!activities.value.length) return null
 
-  const totalDays = activities.value.length
-  const perfectDays = activities.value.filter(a => {
-    const score = calculateScore(a.score)
-    return score >= 6
-  }).length
+  const now = new Date()
+  const currentMonth = now.getMonth()
+  const currentYear = now.getFullYear()
 
-  const averageScore = activities.value.reduce((sum, a) => {
+  // Filter activities for current month
+  const thisMonthActivities = activities.value.filter(a => {
+    const date = new Date(a.date)
+    return date.getMonth() === currentMonth && date.getFullYear() === currentYear
+  })
+
+  if (!thisMonthActivities.length) return null
+
+  // Calculate total points
+  const totalPoints = thisMonthActivities.reduce((sum, a) => {
     return sum + calculateScore(a.score)
-  }, 0) / totalDays
+  }, 0)
 
-  const streakData = calculateStreak(activities.value)
+  // Count exercises and greens
+  const exerciseDays = thisMonthActivities.filter(a => a.score.exercise).length
+  const greensDays = thisMonthActivities.filter(a => a.score.greens).length
+
+  // Count bad habits
+  const totalBadMeals = thisMonthActivities.reduce((sum, a) => sum + a.score.badMeals, 0)
+  const totalSnacks = thisMonthActivities.reduce((sum, a) => sum + a.score.snacks, 0)
+  const totalAlcohol = thisMonthActivities.reduce((sum, a) => sum + a.score.alcohol, 0)
 
   return {
-    totalDays,
-    perfectDays,
-    averageScore: averageScore.toFixed(1),
-    currentStreak: streakData.currentStreak,
-    longestStreak: streakData.longestStreak
+    totalDays: thisMonthActivities.length,
+    totalPoints,
+    exerciseDays,
+    greensDays,
+    totalBadMeals,
+    totalSnacks,
+    totalAlcohol
   }
 })
 
@@ -223,23 +239,47 @@ onMounted(() => {
 
       <!-- Statistics -->
       <div v-if="stats" class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
-        <h3 class="font-bold text-gray-800 dark:text-gray-100 mb-4">Your Progress</h3>
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="font-bold text-gray-800 dark:text-gray-100">This Month</h3>
+          <span class="text-sm text-gray-500 dark:text-gray-400">{{ stats.totalDays }} days logged</span>
+        </div>
+
         <div class="grid grid-cols-2 gap-4">
-          <div class="bg-gray-50 dark:bg-gray-700 rounded-xl p-3 text-center">
-            <div class="text-sm text-gray-500 dark:text-gray-400">Current Streak</div>
-            <div class="font-bold text-xl text-blue-600 dark:text-blue-400">{{ stats.currentStreak }} 🔥</div>
+          <!-- Total Points -->
+          <div class="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-3 text-center">
+            <div class="text-sm text-gray-500 dark:text-gray-400">Total Points</div>
+            <div class="font-bold text-2xl text-blue-600 dark:text-blue-400">{{ stats.totalPoints }}</div>
           </div>
-          <div class="bg-gray-50 dark:bg-gray-700 rounded-xl p-3 text-center">
-            <div class="text-sm text-gray-500 dark:text-gray-400">Longest Streak</div>
-            <div class="font-bold text-xl text-blue-600 dark:text-blue-400">{{ stats.longestStreak }} 🏆</div>
+
+          <!-- Exercise Days -->
+          <div class="bg-green-50 dark:bg-green-900/20 rounded-xl p-3 text-center">
+            <div class="text-sm text-gray-500 dark:text-gray-400">Exercise Days</div>
+            <div class="font-bold text-2xl text-green-600 dark:text-green-400">{{ stats.exerciseDays }} 🏃‍♂️</div>
           </div>
-          <div class="bg-gray-50 dark:bg-gray-700 rounded-xl p-3 text-center">
-            <div class="text-sm text-gray-500 dark:text-gray-400">Perfect Days</div>
-            <div class="font-bold text-xl text-green-600 dark:text-green-400">{{ stats.perfectDays }} ⭐️</div>
+
+          <!-- Greens Days -->
+          <div class="bg-green-50 dark:bg-green-900/20 rounded-xl p-3 text-center">
+            <div class="text-sm text-gray-500 dark:text-gray-400">Greens Days</div>
+            <div class="font-bold text-2xl text-green-600 dark:text-green-400">{{ stats.greensDays }} 🥬</div>
           </div>
-          <div class="bg-gray-50 dark:bg-gray-700 rounded-xl p-3 text-center">
-            <div class="text-sm text-gray-500 dark:text-gray-400">Average Score</div>
-            <div class="font-bold text-xl text-blue-600 dark:text-blue-400">{{ stats.averageScore }}</div>
+
+          <!-- Bad Habits -->
+          <div class="bg-red-50 dark:bg-red-900/20 rounded-xl p-3">
+            <div class="text-sm text-gray-500 dark:text-gray-400 text-center mb-1">Bad Habits</div>
+            <div class="flex justify-around">
+              <div class="text-center">
+                <div class="text-lg text-red-600 dark:text-red-400 font-bold">{{ stats.totalBadMeals }}</div>
+                <div class="text-sm">🍔</div>
+              </div>
+              <div class="text-center">
+                <div class="text-lg text-red-600 dark:text-red-400 font-bold">{{ stats.totalSnacks }}</div>
+                <div class="text-sm">🍪</div>
+              </div>
+              <div class="text-center">
+                <div class="text-lg text-red-600 dark:text-red-400 font-bold">{{ stats.totalAlcohol }}</div>
+                <div class="text-sm">🍺</div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
