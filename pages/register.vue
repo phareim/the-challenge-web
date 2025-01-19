@@ -21,11 +21,15 @@ const handleSubmit = async () => {
   error.value = ''
   
   try {
+    // Save user profile to Firestore
     await saveUserProfile({
       uid: user.value.uid,
       name: form.value.name,
-      goal: form.value.goal || undefined
+      goal: form.value.goal || undefined,
+      email: user.value.email || undefined,
+      photoURL: user.value.photoURL || undefined
     })
+    
     router.push('/activity')
   } catch (e) {
     error.value = 'Failed to save profile. Please try again.'

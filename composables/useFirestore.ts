@@ -4,6 +4,8 @@ import { initializeApp } from 'firebase/app'
 interface UserProfile {
   uid: string
   name: string
+  email?: string
+  photoURL?: string
   goal?: string
   createdAt: Date
   updatedAt: Date
