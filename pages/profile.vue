@@ -188,20 +188,9 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="p-4 max-w-md mx-auto">
-    <div class="flex items-center justify-between mb-6">
-      <NuxtLink 
-        to="/activity"
-        class="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors text-gray-600 dark:text-gray-400"
-      >
-        ← Back to Activity
-      </NuxtLink>
-      
-      <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100">Profile</h1>
-      
-      <div class="w-8"></div>
-    </div>
-
+  <div class="p-4 max-w-md mx-auto">  
+    <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100 text-center pb-6">Profile</h1>
+    
     <div v-if="loading" class="py-12 text-center">
       <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 dark:border-blue-400 mx-auto"></div>
     </div>
@@ -325,7 +314,7 @@ onMounted(() => {
       </div>
 
       <!-- Add before Account Info section -->
-      <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
+      <!--div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
         <div class="flex justify-between items-center">
           <div>
             <h3 class="font-bold text-gray-800 dark:text-gray-200">Appearance</h3>
@@ -338,7 +327,7 @@ onMounted(() => {
             <span class="text-2xl">{{ isDark ? '🌙' : '☀️' }}</span>
           </button>
         </div>
-      </div>
+      </div-->
 
       <!-- Account Info -->
       <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
