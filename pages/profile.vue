@@ -4,13 +4,17 @@ definePageMeta({
 })
 
 const { user } = useFirebaseAuth()
-const { getUserProfile, getAllActivities } = useFirestore()
+const { getUserProfile, getAllActivities, updateUserProfile } = useFirestore()
 const router = useRouter()
 
 const profile = ref<any>(null)
 const activities = ref<any[]>([])
 const loading = ref(true)
 const error = ref('')
+
+const isEditingGoal = ref(false)
+const editedGoal = ref('')
+const savingGoal = ref(false)
 
 // Calculate statistics
 const stats = computed(() => {
@@ -107,6 +111,31 @@ const loadData = async () => {
   }
 }
 
+const startEditingGoal = () => {
+  editedGoal.value = profile.value.goal || ''
+  isEditingGoal.value = true
+}
+
+const saveGoal = async () => {
+  if (!user.value?.uid || savingGoal.value) return
+  
+  savingGoal.value = true
+  try {
+    await updateUserProfile(user.value.uid, { goal: editedGoal.value })
+    profile.value.goal = editedGoal.value
+    isEditingGoal.value = false
+  } catch (e) {
+    console.error('Error saving goal:', e)
+  } finally {
+    savingGoal.value = false
+  }
+}
+
+const cancelEditGoal = () => {
+  isEditingGoal.value = false
+  editedGoal.value = ''
+}
+
 // Load data on mount
 onMounted(() => {
   loadData()
@@ -188,8 +217,41 @@ onMounted(() => {
 
       <!-- Health Goal -->
       <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-        <h3 class="font-bold text-gray-800 mb-2">Health Goal</h3>
-        <p v-if="profile.goal" class="text-gray-600">{{ profile.goal }}</p>
+        <div class="flex justify-between items-center mb-2">
+          <h3 class="font-bold text-gray-800">Health Goal</h3>
+          <button 
+            v-if="!isEditingGoal"
+            @click="startEditingGoal"
+            class="text-sm text-blue-600 hover:text-blue-800"
+          >
+            Edit
+          </button>
+        </div>
+        
+        <div v-if="isEditingGoal">
+          <textarea
+            v-model="editedGoal"
+            class="w-full p-2 border border-gray-300 rounded-lg mb-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            rows="3"
+            placeholder="What's your health goal?"
+          ></textarea>
+          <div class="flex justify-end space-x-2">
+            <button 
+              @click="cancelEditGoal"
+              class="px-3 py-1 text-sm text-gray-600 hover:text-gray-800"
+            >
+              Cancel
+            </button>
+            <button 
+              @click="saveGoal"
+              class="px-3 py-1 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+              :disabled="savingGoal"
+            >
+              {{ savingGoal ? 'Saving...' : 'Save' }}
+            </button>
+          </div>
+        </div>
+        <p v-else-if="profile.goal" class="text-gray-600">{{ profile.goal }}</p>
         <p v-else class="text-gray-400 italic">No health goal set</p>
       </div>
 

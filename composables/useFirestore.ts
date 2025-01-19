@@ -1,4 +1,4 @@
-import { getFirestore, doc, setDoc, getDoc, collection, query, where, getDocs, Timestamp } from 'firebase/firestore'
+import { getFirestore, doc, setDoc, getDoc, collection, query, where, getDocs, Timestamp, updateDoc, serverTimestamp } from 'firebase/firestore'
 import { initializeApp } from 'firebase/app'
 
 interface UserProfile {
@@ -78,6 +78,14 @@ export const useFirestore = () => {
     }
   }
 
+  const updateUserProfile = async (uid: string, updates: Partial<Omit<UserProfile, 'createdAt' | 'updatedAt'>>) => {
+    const userRef = doc(db, 'users', uid)
+    await updateDoc(userRef, {
+      ...updates,
+      updatedAt: serverTimestamp()
+    })
+  }
+
   // Activity Operations
   const saveActivity = async (date: string, score: ActivityScore) => {
     if (!user.value?.uid) throw new Error('User not authenticated')
@@ -131,6 +139,7 @@ export const useFirestore = () => {
     // User operations
     saveUserProfile,
     getUserProfile,
+    updateUserProfile,
     
     // Activity operations
     saveActivity,
