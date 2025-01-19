@@ -21,7 +21,6 @@ const currentDate = ref(
 
 const loading = ref(true)
 const saving = ref(false)
-const { signOutUser } = useFirebaseAuth()
 
 // Default score state
 const defaultScore = {
@@ -148,15 +147,6 @@ const toggleBonus = (type: keyof Pick<Activity['score'], 'exercise' | 'greens'>)
   score.value[type] = !score.value[type]
 }
 
-const handleSignOut = async () => {
-  try {
-    await signOutUser()
-    navigateTo('/login')
-  } catch (error) {
-    console.error('Failed to sign out:', error)
-  }
-}
-
 // Add keyboard navigation
 const handleKeydown = (e: KeyboardEvent) => {
   // Ignore if we're in an input field
@@ -211,22 +201,6 @@ onUnmounted(() => {
       >
         <span class="text-xl" :class="{ 'opacity-50': isToday }">→</span>
       </button>
-
-      <!-- Add sign out button -->
-      <div class="absolute top-4 right-4 flex items-center space-x-2">
-        <NuxtLink 
-          to="/profile"
-          class="px-3 py-1 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
-        >
-          Profile
-        </NuxtLink>
-        <button 
-          @click="handleSignOut"
-          class="px-3 py-1 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
-        >
-          Sign Out
-        </button>
-      </div>
     </div>
     
     <div v-if="loading" class="py-12 text-center">

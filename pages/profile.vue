@@ -3,7 +3,7 @@ definePageMeta({
   middleware: ['auth']
 })
 
-const { user } = useFirebaseAuth()
+const { user, authInitialized, signOutUser } = useFirebaseAuth()
 const { getUserProfile, getAllActivities, updateUserProfile } = useFirestore()
 const router = useRouter()
 
@@ -134,6 +134,16 @@ const saveGoal = async () => {
 const cancelEditGoal = () => {
   isEditingGoal.value = false
   editedGoal.value = ''
+}
+
+// Add sign out handler
+const handleSignOut = async () => {
+  try {
+    await signOutUser()
+    navigateTo('/login')
+  } catch (error) {
+    console.error('Failed to sign out:', error)
+  }
 }
 
 // Load data on mount
@@ -275,6 +285,16 @@ onMounted(() => {
               day: 'numeric'
             }) }}</span>
           </div>
+        </div>
+        
+        <!-- Sign Out Button -->
+        <div class="mt-6 pt-4 border-t border-gray-100">
+          <button 
+            @click="handleSignOut"
+            class="w-full px-4 py-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors text-sm font-medium"
+          >
+            Sign Out
+          </button>
         </div>
       </div>
     </div>
