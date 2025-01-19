@@ -41,6 +41,17 @@
             <span class="text-sm">History</span>
           </NuxtLink>
           <NuxtLink 
+            to="/leaderboard" 
+            class="flex flex-col items-center p-2 rounded-xl transition-all duration-200"
+            :class="{ 
+              'text-gray-400 dark:text-gray-500 hover:text-blue-600 dark:hover:text-blue-400': $route.path !== '/leaderboard',
+              'text-blue-600 dark:text-blue-400 scale-110 font-medium': $route.path === '/leaderboard'
+            }"
+          >
+            <span class="text-xl mb-1 transition-transform" :class="{ 'scale-110': $route.path === '/leaderboard' }">🏆</span>
+            <span class="text-sm">Ranking</span>
+          </NuxtLink>
+          <NuxtLink 
             to="/profile" 
             class="flex flex-col items-center p-2 rounded-xl transition-all duration-200"
             :class="{ 

@@ -26,6 +26,16 @@ interface Activity {
   updatedAt: Date
 }
 
+interface MonthlyScore {
+  userId: string
+  month: string // Format: 'YYYY-MM'
+  totalPoints: number
+  exerciseDays: number
+  greensDays: number
+  totalDays: number
+  updatedAt: Date
+}
+
 export const useFirestore = () => {
   const config = useRuntimeConfig()
   const { user } = useFirebaseAuth()
@@ -98,6 +108,9 @@ export const useFirestore = () => {
         score,
         updatedAt: new Date()
       })
+
+      // Update monthly score
+      await updateMonthlyScore(date, score)
     } catch (error) {
       console.error('Error saving activity:', error)
       throw error
@@ -135,6 +148,72 @@ export const useFirestore = () => {
     }
   }
 
+  // Get all users
+  const getAllUsers = async (): Promise<(UserProfile & { id: string })[]> => {
+    const usersRef = collection(db, 'users')
+    const snapshot = await getDocs(usersRef)
+    return snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data(),
+      createdAt: (doc.data().createdAt as Timestamp).toDate(),
+      updatedAt: (doc.data().updatedAt as Timestamp).toDate()
+    })) as (UserProfile & { id: string })[]
+  }
+
+  // Monthly Score Operations
+  const updateMonthlyScore = async (date: string, score: ActivityScore) => {
+    if (!user.value?.uid) throw new Error('User not authenticated')
+
+    try {
+      const month = date.substring(0, 7) // Get YYYY-MM from YYYY-MM-DD
+      const scoreRef = doc(db, 'monthlyScores', `${user.value.uid}_${month}`)
+      
+      // Get current monthly score
+      const currentDoc = await getDoc(scoreRef)
+      const currentScore = currentDoc.exists() ? currentDoc.data() as MonthlyScore : {
+        userId: user.value.uid,
+        month,
+        totalPoints: 0,
+        exerciseDays: 0,
+        greensDays: 0,
+        totalDays: 0
+      }
+
+      // Calculate new score
+      const points = Math.max(0, 4 - (score.badMeals + score.alcohol + score.snacks)) + 
+                    (score.exercise ? 1 : 0) + (score.greens ? 1 : 0)
+
+      // Update monthly totals
+      await setDoc(scoreRef, {
+        ...currentScore,
+        totalPoints: currentScore.totalPoints + points,
+        exerciseDays: currentScore.exerciseDays + (score.exercise ? 1 : 0),
+        greensDays: currentScore.greensDays + (score.greens ? 1 : 0),
+        totalDays: currentScore.totalDays + 1,
+        updatedAt: new Date()
+      })
+    } catch (error) {
+      console.error('Error updating monthly score:', error)
+      throw error
+    }
+  }
+
+  const getMonthlyScores = async (month: string): Promise<MonthlyScore[]> => {
+    try {
+      const scoresRef = collection(db, 'monthlyScores')
+      const q = query(scoresRef, where('month', '==', month))
+      const snapshot = await getDocs(q)
+      
+      return snapshot.docs.map(doc => ({
+        ...doc.data(),
+        updatedAt: (doc.data().updatedAt as Timestamp).toDate()
+      })) as MonthlyScore[]
+    } catch (error) {
+      console.error('Error getting monthly scores:', error)
+      throw error
+    }
+  }
+
   return {
     // User operations
     saveUserProfile,
@@ -144,6 +223,11 @@ export const useFirestore = () => {
     // Activity operations
     saveActivity,
     getActivity,
-    getAllActivities
+    getAllActivities,
+    getAllUsers,
+
+    // Monthly Score operations
+    updateMonthlyScore,
+    getMonthlyScores
   }
 } 

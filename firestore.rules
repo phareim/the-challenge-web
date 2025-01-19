@@ -2,47 +2,32 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Helper function to check if user is authenticated
-    function isAuthenticated() {
+    // Helper functions
+    function isSignedIn() {
       return request.auth != null;
     }
     
-    // Helper function to check if user is accessing their own data
     function isOwner(userId) {
-      return isAuthenticated() && request.auth.uid == userId;
+      return isSignedIn() && request.auth.uid == userId;
     }
 
-    // Users collection rules
+    // User profiles and their subcollections are readable by all
     match /users/{userId} {
-      // Allow read if authenticated and it's their own profile
-      allow read: if isOwner(userId);
+      allow read: if true;  // Anyone can read
+      allow write: if isOwner(userId);  // Only owner can write
       
-      // Allow create if authenticated and creating their own profile
-      allow create: if isOwner(userId)
-        && request.resource.data.uid == userId
-        && request.resource.data.createdAt == request.time
-        && request.resource.data.updatedAt == request.time;
-      
-      // Allow update if authenticated and updating their own profile
-      allow update: if isOwner(userId)
-        && request.resource.data.uid == userId
-        && request.resource.data.createdAt == resource.data.createdAt
-        && request.resource.data.updatedAt == request.time;
-        
-      // Never allow delete
-      allow delete: if false;
+      match /{document=**} {
+        allow read: if true;  // Anyone can read subcollections (activities)
+        allow write: if isOwner(userId);  // Only owner can write their data
+      }
     }
 
-    // Activities collection rules
-    match /users/{userId}/activities/{date} {
-      allow read: if isOwner(userId);
-      
-      allow create, update: if isOwner(userId)
-        && request.resource.data.userId == userId
-        && request.resource.data.date == date
-        && request.resource.data.updatedAt == request.time;
-      
-      allow delete: if isOwner(userId);
+    // Monthly scores are readable by all, but only writable through the app
+    match /monthlyScores/{scoreId} {
+      allow read: if true;
+      allow list: if true;  // Explicitly allow querying the collection
+      allow write: if isSignedIn() && 
+                   scoreId.matches(request.auth.uid + '_[0-9]{4}-[0-9]{2}');
     }
 
     // Default deny all other access
