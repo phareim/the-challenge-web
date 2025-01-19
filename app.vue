@@ -6,38 +6,44 @@
     </main>
 
     <!-- Bottom navigation -->
-    <nav class="fixed bottom-0 left-0 right-0">
-      <div class="mx-4 mb-4">
-        <div class="flex justify-around items-center h-16 bg-white rounded-2xl shadow-lg border border-gray-100 backdrop-blur-lg bg-opacity-90">
-          <NuxtLink to="/" class="flex flex-col items-center px-4 py-2 transition-all duration-200 hover:scale-110" active-class="text-blue-600 font-medium">
-            <i class="i-heroicons-chart-bar text-2xl mb-0.5" />
-            <span class="text-xs">Score</span>
-          </NuxtLink>
-          
-          <NuxtLink to="/explore" class="flex flex-col items-center px-4 py-2 transition-all duration-200 hover:scale-110" active-class="text-blue-600 font-medium">
-            <i class="i-heroicons-trophy text-2xl mb-0.5" />
-            <span class="text-xs">Leaderboard</span>
-          </NuxtLink>
-          
-          <NuxtLink to="/activity" class="flex flex-col items-center px-4 py-2 transition-all duration-200 hover:scale-110" active-class="text-blue-600 font-medium">
-            <div class="relative -mt-8">
-              <div class="absolute inset-0 bg-blue-600 rounded-full blur-sm opacity-20"></div>
-              <div class="relative bg-blue-600 text-white p-4 rounded-full shadow-lg">
-                <i class="i-heroicons-plus text-2xl" />
-              </div>
-            </div>
-            <span class="text-xs mt-1">Log</span>
-          </NuxtLink>
-          
-          <NuxtLink to="/profile" class="flex flex-col items-center px-4 py-2 transition-all duration-200 hover:scale-110" active-class="text-blue-600 font-medium">
-            <i class="i-heroicons-user text-2xl mb-0.5" />
-            <span class="text-xs">Profile</span>
-          </NuxtLink>
-        </div>
-      </div>
-    </nav>
+    <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200">
+      <nav class="flex justify-around p-2">
+        <NuxtLink 
+          to="/activity" 
+          class="flex flex-col items-center p-2 text-sm text-gray-600 hover:text-blue-600"
+          :class="{ 'text-blue-600': $route.path === '/activity' }"
+        >
+          <span class="text-xl mb-1">📝</span>
+          <span>Log</span>
+        </NuxtLink>
+        <NuxtLink 
+          to="/explore" 
+          class="flex flex-col items-center p-2 text-sm text-gray-600 hover:text-blue-600"
+          :class="{ 'text-blue-600': $route.path === '/explore' }"
+        >
+          <span class="text-xl mb-1">📊</span>
+          <span>Explore</span>
+        </NuxtLink>
+        <NuxtLink 
+          to="/profile" 
+          class="flex flex-col items-center p-2 text-sm text-gray-600 hover:text-blue-600"
+          :class="{ 'text-blue-600': $route.path === '/profile' }"
+        >
+          <span class="text-xl mb-1">👤</span>
+          <span>Profile</span>
+        </NuxtLink>
+      </nav>
+    </div>
   </div>
 </template>
+
+<script setup lang="ts">
+// Redirect root to activity page
+const router = useRouter()
+if (process.client) {
+  router.push('/activity')
+}
+</script>
 
 <style>
 html, body {
@@ -59,5 +65,15 @@ html, body {
   .hover\:scale-110:hover {
     transform: scale(1.1);
   }
+}
+
+.page-enter-active,
+.page-leave-active {
+  transition: all 0.2s;
+}
+.page-enter-from,
+.page-leave-to {
+  opacity: 0;
+  transform: translateY(20px);
 }
 </style>
