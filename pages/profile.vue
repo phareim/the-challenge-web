@@ -1,149 +1,221 @@
 <script setup lang="ts">
-import type { User } from '~/types/user'
-import { useUserService } from '~/services/userService'
+definePageMeta({
+  middleware: ['auth']
+})
 
-const userService = useUserService()
-const user = ref<User | null>(null)
+const { user } = useFirebaseAuth()
+const { getUserProfile, getAllActivities } = useFirestore()
+const router = useRouter()
+
+const profile = ref<any>(null)
+const activities = ref<any[]>([])
 const loading = ref(true)
-const formData = ref({
-  displayName: '',
-  email: '',
-  notifications: {
-    dailyReminders: false,
-    weeklySummary: false
+const error = ref('')
+
+// Calculate statistics
+const stats = computed(() => {
+  if (!activities.value.length) return null
+
+  const totalDays = activities.value.length
+  const perfectDays = activities.value.filter(a => {
+    const score = calculateScore(a.score)
+    return score >= 6
+  }).length
+
+  const averageScore = activities.value.reduce((sum, a) => {
+    return sum + calculateScore(a.score)
+  }, 0) / totalDays
+
+  const streakData = calculateStreak(activities.value)
+
+  return {
+    totalDays,
+    perfectDays,
+    averageScore: averageScore.toFixed(1),
+    currentStreak: streakData.currentStreak,
+    longestStreak: streakData.longestStreak
   }
 })
 
-// Load user data
-onMounted(async () => {
-  try {
-    const userData = await userService.getCurrentUser()
-    user.value = userData
-    // Initialize form data
-    formData.value = {
-      displayName: userData.displayName,
-      email: userData.settings.email || '',
-      notifications: {
-        dailyReminders: userData.settings.notifications.dailyReminders,
-        weeklySummary: userData.settings.notifications.weeklySummary
+// Helper function to calculate score
+const calculateScore = (score: any) => {
+  const basePoints = 4
+  const deductions = score.badMeals + score.alcohol + score.snacks
+  const bonusPoints = (score.exercise ? 1 : 0) + (score.greens ? 1 : 0)
+  return Math.max(0, basePoints - deductions) + bonusPoints
+}
+
+// Helper function to calculate streaks
+const calculateStreak = (activities: any[]) => {
+  const sortedActivities = [...activities].sort((a, b) => 
+    new Date(b.date).getTime() - new Date(a.date).getTime()
+  )
+
+  let currentStreak = 0
+  let longestStreak = 0
+  let currentCount = 0
+
+  for (let i = 0; i < sortedActivities.length; i++) {
+    const score = calculateScore(sortedActivities[i].score)
+    if (score >= 4) {
+      currentCount++
+      longestStreak = Math.max(longestStreak, currentCount)
+      
+      // Only count in current streak if it's consecutive days
+      if (i === 0 || isConsecutiveDay(sortedActivities[i-1].date, sortedActivities[i].date)) {
+        currentStreak = currentCount
+      } else {
+        currentStreak = 1
       }
+    } else {
+      currentCount = 0
+      if (i === 0) currentStreak = 0
     }
-  } catch (error) {
-    console.error('Failed to load user:', error)
+  }
+
+  return { currentStreak, longestStreak }
+}
+
+// Helper function to check if two dates are consecutive
+const isConsecutiveDay = (date1: string, date2: string) => {
+  const d1 = new Date(date1)
+  const d2 = new Date(date2)
+  const diffTime = Math.abs(d2.getTime() - d1.getTime())
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+  return diffDays === 1
+}
+
+// Load user profile and activities
+const loadData = async () => {
+  if (!user.value?.uid) return
+  
+  loading.value = true
+  error.value = ''
+  
+  try {
+    const [profileData, activitiesData] = await Promise.all([
+      getUserProfile(user.value.uid),
+      getAllActivities()
+    ])
+    profile.value = profileData
+    activities.value = activitiesData
+  } catch (e) {
+    error.value = 'Failed to load data'
+    console.error('Error loading data:', e)
   } finally {
     loading.value = false
   }
-})
-
-const saveChanges = async () => {
-  if (!user.value) return
-  
-  try {
-    await userService.updateUser({
-      displayName: formData.value.displayName,
-      settings: {
-        ...user.value.settings,
-        email: formData.value.email,
-        notifications: formData.value.notifications
-      }
-    })
-    // Could add a success message here
-  } catch (error) {
-    console.error('Failed to update user:', error)
-    // Could add error handling here
-  }
 }
+
+// Load data on mount
+onMounted(() => {
+  loadData()
+})
 </script>
 
 <template>
   <div class="p-4 max-w-md mx-auto">
-    <h1 class="text-2xl font-bold mb-6 text-gray-800">Profile</h1>
-    
-    <div v-if="loading" class="text-center py-8">
+    <div class="flex items-center justify-between mb-6">
+      <NuxtLink 
+        to="/activity"
+        class="p-2 hover:bg-gray-100 rounded-lg transition-colors text-gray-600"
+      >
+        ← Back to Activity
+      </NuxtLink>
+      
+      <h1 class="text-2xl font-bold text-gray-800">Profile</h1>
+      
+      <div class="w-8"></div> <!-- Spacer for alignment -->
+    </div>
+
+    <div v-if="loading" class="py-12 text-center">
       <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
     </div>
-    
-    <template v-else-if="user">
+
+    <div v-else-if="error" class="text-center py-12">
+      <div class="text-red-600 mb-4">{{ error }}</div>
+      <button 
+        @click="loadData"
+        class="text-blue-600 hover:text-blue-800"
+      >
+        Try Again
+      </button>
+    </div>
+
+    <div v-else-if="profile" class="space-y-6">
       <!-- Profile Header -->
-      <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 mb-6">
-        <div class="flex items-center mb-6">
-          <div class="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 text-2xl font-bold mr-4">
-            {{ user.initials }}
-          </div>
-          <div>
-            <h2 class="font-bold text-xl">{{ user.displayName }}</h2>
-            <p class="text-gray-500">Joined {{ user.joinedDate }}</p>
+      <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 text-center">
+        <div class="mb-4">
+          <img 
+            v-if="profile.photoURL"
+            :src="profile.photoURL"
+            :alt="profile.name"
+            class="w-24 h-24 rounded-full mx-auto border-4 border-white shadow-md"
+          />
+          <div 
+            v-else
+            class="w-24 h-24 rounded-full mx-auto bg-blue-100 flex items-center justify-center text-2xl font-bold text-blue-600"
+          >
+            {{ profile.name.charAt(0).toUpperCase() }}
           </div>
         </div>
-        
-        <!-- Quick Stats -->
+        <h2 class="text-xl font-bold text-gray-900">{{ profile.name }}</h2>
+        <p v-if="profile.email" class="text-gray-500 text-sm mt-1">{{ profile.email }}</p>
+      </div>
+
+      <!-- Statistics -->
+      <div v-if="stats" class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+        <h3 class="font-bold text-gray-800 mb-4">Your Progress</h3>
         <div class="grid grid-cols-2 gap-4">
           <div class="bg-gray-50 rounded-xl p-3 text-center">
-            <div class="text-sm text-gray-500">All-time Score</div>
-            <div class="font-bold text-xl">{{ user.stats.allTimeScore }}</div>
+            <div class="text-sm text-gray-500">Current Streak</div>
+            <div class="font-bold text-xl text-blue-600">{{ stats.currentStreak }} 🔥</div>
+          </div>
+          <div class="bg-gray-50 rounded-xl p-3 text-center">
+            <div class="text-sm text-gray-500">Longest Streak</div>
+            <div class="font-bold text-xl text-blue-600">{{ stats.longestStreak }} 🏆</div>
           </div>
           <div class="bg-gray-50 rounded-xl p-3 text-center">
             <div class="text-sm text-gray-500">Perfect Days</div>
-            <div class="font-bold text-xl">{{ user.stats.perfectDays }} ⭐️</div>
+            <div class="font-bold text-xl text-green-600">{{ stats.perfectDays }} ⭐️</div>
+          </div>
+          <div class="bg-gray-50 rounded-xl p-3 text-center">
+            <div class="text-sm text-gray-500">Average Score</div>
+            <div class="font-bold text-xl text-blue-600">{{ stats.averageScore }}</div>
           </div>
         </div>
       </div>
-      
-      <!-- Settings -->
+
+      <!-- Health Goal -->
       <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-        <h2 class="font-bold text-lg mb-4">Settings</h2>
-        <form @submit.prevent="saveChanges" class="space-y-4">
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Display Name</label>
-            <input 
-              v-model="formData.displayName"
-              type="text" 
-              class="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
-              placeholder="Your name"
-            />
-          </div>
-          
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
-            <input 
-              v-model="formData.email"
-              type="email" 
-              class="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
-              placeholder="your@email.com"
-            />
-          </div>
-          
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Notifications</label>
-            <div class="space-y-2">
-              <label class="flex items-center">
-                <input 
-                  v-model="formData.notifications.dailyReminders"
-                  type="checkbox" 
-                  class="rounded text-blue-600 focus:ring-blue-500 mr-2" 
-                />
-                <span>Daily reminders</span>
-              </label>
-              <label class="flex items-center">
-                <input 
-                  v-model="formData.notifications.weeklySummary"
-                  type="checkbox" 
-                  class="rounded text-blue-600 focus:ring-blue-500 mr-2" 
-                />
-                <span>Weekly summary</span>
-              </label>
-            </div>
-          </div>
-          
-          <button 
-            type="submit"
-            class="w-full bg-blue-600 text-white py-3 rounded-xl hover:bg-blue-700 transition-colors font-medium"
-          >
-            Save Changes
-          </button>
-        </form>
+        <h3 class="font-bold text-gray-800 mb-2">Health Goal</h3>
+        <p v-if="profile.goal" class="text-gray-600">{{ profile.goal }}</p>
+        <p v-else class="text-gray-400 italic">No health goal set</p>
       </div>
-    </template>
+
+      <!-- Account Info -->
+      <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+        <h3 class="font-bold text-gray-800 mb-4">Account Information</h3>
+        <div class="space-y-2 text-sm">
+          <div class="flex justify-between text-gray-600">
+            <span>Member since</span>
+            <span>{{ new Date(profile.createdAt).toLocaleDateString('en-US', {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric'
+            }) }}</span>
+          </div>
+          <div class="flex justify-between text-gray-600">
+            <span>Last updated</span>
+            <span>{{ new Date(profile.updatedAt).toLocaleDateString('en-US', {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric'
+            }) }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 

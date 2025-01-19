@@ -1,4 +1,4 @@
-import { getFirestore, doc, setDoc, getDoc, collection, query, where, getDocs } from 'firebase/firestore'
+import { getFirestore, doc, setDoc, getDoc, collection, query, where, getDocs, Timestamp } from 'firebase/firestore'
 import { initializeApp } from 'firebase/app'
 
 interface UserProfile {
@@ -64,7 +64,12 @@ export const useFirestore = () => {
       const userDoc = await getDoc(userRef)
       
       if (userDoc.exists()) {
-        return userDoc.data() as UserProfile
+        const data = userDoc.data()
+        return {
+          ...data,
+          createdAt: (data.createdAt as Timestamp).toDate(),
+          updatedAt: (data.updatedAt as Timestamp).toDate()
+        } as UserProfile
       }
       return null
     } catch (error) {

@@ -168,12 +168,20 @@ const handleSignOut = async () => {
       </button>
 
       <!-- Add sign out button -->
-      <button 
-        @click="handleSignOut"
-        class="absolute top-4 right-4 px-3 py-1 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
-      >
-        Sign Out
-      </button>
+      <div class="absolute top-4 right-4 flex items-center space-x-2">
+        <NuxtLink 
+          to="/profile"
+          class="px-3 py-1 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
+        >
+          Profile
+        </NuxtLink>
+        <button 
+          @click="handleSignOut"
+          class="px-3 py-1 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
+        >
+          Sign Out
+        </button>
+      </div>
     </div>
     
     <div v-if="loading" class="py-12 text-center">
