@@ -1,10 +1,10 @@
 <template>
-  <div class="min-h-screen flex flex-col bg-gradient-to-b from-blue-50 to-white">
+  <div class="min-h-screen flex flex-col bg-gradient-to-b from-blue-50 to-white dark:from-gray-900 dark:to-gray-800 text-gray-900 dark:text-gray-100">
     <!-- Loading state -->
     <div v-if="!authInitialized" class="flex-1 flex items-center justify-center">
       <div class="text-center">
-        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-        <p class="text-gray-600">Loading...</p>
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 dark:border-blue-400 mx-auto mb-4"></div>
+        <p class="text-gray-600 dark:text-gray-400">Loading...</p>
       </div>
     </div>
 
@@ -16,31 +16,40 @@
       </main>
 
       <!-- Bottom navigation -->
-      <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200">
+      <div class="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800">
         <nav class="flex justify-around p-2">
           <NuxtLink 
             to="/activity" 
-            class="flex flex-col items-center p-2 text-sm text-gray-600 hover:text-blue-600"
-            :class="{ 'text-blue-600': $route.path === '/activity' }"
+            class="flex flex-col items-center p-2 rounded-xl transition-all duration-200"
+            :class="{ 
+              'text-gray-400 dark:text-gray-500 hover:text-blue-600 dark:hover:text-blue-400': $route.path !== '/activity',
+              'text-blue-600 dark:text-blue-400 scale-110 font-medium': $route.path === '/activity'
+            }"
           >
-            <span class="text-xl mb-1">📝</span>
-            <span>Log</span>
+            <span class="text-xl mb-1 transition-transform" :class="{ 'scale-110': $route.path === '/activity' }">📝</span>
+            <span class="text-sm">Log</span>
           </NuxtLink>
           <NuxtLink 
             to="/explore" 
-            class="flex flex-col items-center p-2 text-sm text-gray-600 hover:text-blue-600"
-            :class="{ 'text-blue-600': $route.path === '/explore' }"
+            class="flex flex-col items-center p-2 rounded-xl transition-all duration-200"
+            :class="{ 
+              'text-gray-400 dark:text-gray-500 hover:text-blue-600 dark:hover:text-blue-400': $route.path !== '/explore',
+              'text-blue-600 dark:text-blue-400 scale-110 font-medium': $route.path === '/explore'
+            }"
           >
-            <span class="text-xl mb-1">📊</span>
-            <span>Explore</span>
+            <span class="text-xl mb-1 transition-transform" :class="{ 'scale-110': $route.path === '/explore' }">📊</span>
+            <span class="text-sm">Explore</span>
           </NuxtLink>
           <NuxtLink 
             to="/profile" 
-            class="flex flex-col items-center p-2 text-sm text-gray-600 hover:text-blue-600"
-            :class="{ 'text-blue-600': $route.path === '/profile' }"
+            class="flex flex-col items-center p-2 rounded-xl transition-all duration-200"
+            :class="{ 
+              'text-gray-400 dark:text-gray-500 hover:text-blue-600 dark:hover:text-blue-400': $route.path !== '/profile',
+              'text-blue-600 dark:text-blue-400 scale-110 font-medium': $route.path === '/profile'
+            }"
           >
-            <span class="text-xl mb-1">👤</span>
-            <span>Profile</span>
+            <span class="text-xl mb-1 transition-transform" :class="{ 'scale-110': $route.path === '/profile' }">👤</span>
+            <span class="text-sm">Profile</span>
           </NuxtLink>
         </nav>
       </div>
@@ -69,12 +78,12 @@ watch([() => authInitialized.value, () => user.value], ([initialized, currentUse
 
 <style>
 html, body {
-  @apply text-gray-700;
+  @apply text-gray-700 dark:text-gray-300;
   -webkit-tap-highlight-color: transparent;
 }
 
 .router-link-active {
-  @apply text-blue-600;
+  @apply text-blue-600 dark:text-blue-400;
 }
 
 /* Smooth scrolling */

@@ -64,9 +64,9 @@ const calculatePercentage = (booleans: boolean[]) => {
 
 // Get score color based on value
 const getScoreColor = (score: number) => {
-  if (score >= 6) return 'bg-green-100 text-green-700'
-  if (score >= 4) return 'bg-blue-100 text-blue-700'
-  return 'bg-gray-100 text-gray-700'
+  if (score >= 6) return 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
+  if (score >= 4) return 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
+  return 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-400'
 }
 
 // Format date for display
@@ -108,25 +108,25 @@ onMounted(() => {
     <div class="flex items-center justify-between mb-6">
       <NuxtLink 
         to="/activity"
-        class="p-2 hover:bg-gray-100 rounded-lg transition-colors text-gray-600"
+        class="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors text-gray-600 dark:text-gray-400"
       >
         ← Back to Activity
       </NuxtLink>
       
-      <h1 class="text-2xl font-bold text-gray-800">Explore Your Journey</h1>
+      <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100">Explore Your Journey</h1>
       
-      <div class="w-8"></div> <!-- Spacer for alignment -->
+      <div class="w-8"></div>
     </div>
 
     <div v-if="loading" class="py-12 text-center">
-      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 dark:border-blue-400 mx-auto"></div>
     </div>
 
     <div v-else-if="error" class="text-center py-12">
-      <div class="text-red-600 mb-4">{{ error }}</div>
+      <div class="text-red-600 dark:text-red-400 mb-4">{{ error }}</div>
       <button 
         @click="loadActivities"
-        class="text-blue-600 hover:text-blue-800"
+        class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"
       >
         Try Again
       </button>
@@ -134,8 +134,8 @@ onMounted(() => {
 
     <div v-else-if="processedActivities" class="space-y-6">
       <!-- Activity Calendar -->
-      <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-        <h3 class="font-bold text-gray-800 mb-4">Activity History</h3>
+      <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
+        <h3 class="font-bold text-gray-800 dark:text-gray-100 mb-4">Activity History</h3>
         <div class="grid grid-cols-7 gap-2">
           <template v-for="score in processedActivities.dailyScores" :key="score.date">
             <button 
@@ -151,44 +151,44 @@ onMounted(() => {
       </div>
 
       <!-- Trends -->
-      <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-        <h3 class="font-bold text-gray-800 mb-4">Your Trends</h3>
+      <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
+        <h3 class="font-bold text-gray-800 dark:text-gray-100 mb-4">Your Trends</h3>
         <div class="space-y-4">
           <!-- Deductions -->
           <div>
-            <h4 class="text-sm font-medium text-gray-700 mb-2">Average Daily Deductions</h4>
+            <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Average Daily Deductions</h4>
             <div class="grid grid-cols-3 gap-4">
-              <div class="bg-red-50 rounded-xl p-3 text-center">
+              <div class="bg-red-50 dark:bg-red-900/20 rounded-xl p-3 text-center">
                 <div class="text-2xl mb-1">🍔</div>
-                <div class="text-sm text-gray-500">Fast Food</div>
-                <div class="font-bold text-red-600">{{ processedActivities.trends.badMeals }}</div>
+                <div class="text-sm text-gray-500 dark:text-gray-400">Fast Food</div>
+                <div class="font-bold text-red-600 dark:text-red-400">{{ processedActivities.trends.badMeals }}</div>
               </div>
-              <div class="bg-red-50 rounded-xl p-3 text-center">
+              <div class="bg-red-50 dark:bg-red-900/20 rounded-xl p-3 text-center">
                 <div class="text-2xl mb-1">🍺</div>
-                <div class="text-sm text-gray-500">Alcohol</div>
-                <div class="font-bold text-red-600">{{ processedActivities.trends.alcohol }}</div>
+                <div class="text-sm text-gray-500 dark:text-gray-400">Alcohol</div>
+                <div class="font-bold text-red-600 dark:text-red-400">{{ processedActivities.trends.alcohol }}</div>
               </div>
-              <div class="bg-red-50 rounded-xl p-3 text-center">
+              <div class="bg-red-50 dark:bg-red-900/20 rounded-xl p-3 text-center">
                 <div class="text-2xl mb-1">🍪</div>
-                <div class="text-sm text-gray-500">Snacks</div>
-                <div class="font-bold text-red-600">{{ processedActivities.trends.snacks }}</div>
+                <div class="text-sm text-gray-500 dark:text-gray-400">Snacks</div>
+                <div class="font-bold text-red-600 dark:text-red-400">{{ processedActivities.trends.snacks }}</div>
               </div>
             </div>
           </div>
 
           <!-- Bonus Goals -->
           <div>
-            <h4 class="text-sm font-medium text-gray-700 mb-2">Success Rate</h4>
+            <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Success Rate</h4>
             <div class="grid grid-cols-2 gap-4">
-              <div class="bg-green-50 rounded-xl p-3 text-center">
+              <div class="bg-green-50 dark:bg-green-900/20 rounded-xl p-3 text-center">
                 <div class="text-2xl mb-1">🏃‍♂️</div>
-                <div class="text-sm text-gray-500">Exercise</div>
-                <div class="font-bold text-green-600">{{ processedActivities.trends.exercise }}%</div>
+                <div class="text-sm text-gray-500 dark:text-gray-400">Exercise</div>
+                <div class="font-bold text-green-600 dark:text-green-400">{{ processedActivities.trends.exercise }}%</div>
               </div>
-              <div class="bg-green-50 rounded-xl p-3 text-center">
+              <div class="bg-green-50 dark:bg-green-900/20 rounded-xl p-3 text-center">
                 <div class="text-2xl mb-1">🥬</div>
-                <div class="text-sm text-gray-500">Greens</div>
-                <div class="font-bold text-green-600">{{ processedActivities.trends.greens }}%</div>
+                <div class="text-sm text-gray-500 dark:text-gray-400">Greens</div>
+                <div class="font-bold text-green-600 dark:text-green-400">{{ processedActivities.trends.greens }}%</div>
               </div>
             </div>
           </div>

@@ -176,27 +176,27 @@ onUnmounted(() => {
     <div class="flex items-center justify-between mb-6">
       <button 
         @click="changeDate(-1)"
-        class="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+        class="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
         :disabled="loading"
       >
         <span class="text-xl">←</span>
       </button>
       
       <div class="text-center">
-        <h1 class="text-2xl font-bold text-gray-800">
+        <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100">
           {{ formattedDate }}
         </h1>
-        <span class="text-sm text-gray-500" v-if="!isToday">
+        <span class="text-sm text-gray-500 dark:text-gray-400" v-if="!isToday">
           Tap arrows to navigate
         </span>
-        <span class="text-sm text-blue-500 font-medium" v-else>
+        <span class="text-sm text-blue-500 dark:text-blue-400 font-medium" v-else>
           Today
         </span>
       </div>
       
       <button 
         @click="changeDate(1)"
-        class="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+        class="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
         :disabled="isToday || loading"
       >
         <span class="text-xl" :class="{ 'opacity-50': isToday }">→</span>
@@ -204,87 +204,93 @@ onUnmounted(() => {
     </div>
     
     <div v-if="loading" class="py-12 text-center">
-      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 dark:border-blue-400 mx-auto"></div>
     </div>
     
     <template v-else>
       <!-- Score Display -->
-      <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 mb-6 relative">
+      <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700 mb-6 relative">
         <div class="text-center">
-          <div class="text-sm text-gray-500 mb-1">Score</div>
+          <div class="text-sm text-gray-500 dark:text-gray-400 mb-1">Score</div>
           <div class="inline-flex items-baseline">
-            <span class="text-6xl font-bold" :class="getTotalScore >= 4 ? 'text-green-600' : 'text-blue-600'">
+            <span class="text-6xl font-bold" :class="getTotalScore >= 4 ? 'text-green-600 dark:text-green-400' : 'text-blue-600 dark:text-blue-400'">
               {{ getTotalScore }}
             </span>
-            <span class="text-2xl text-gray-400 ml-1">/{{ getMaxScore }}</span>
+            <span class="text-2xl text-gray-400 dark:text-gray-500 ml-1">/{{ getMaxScore }}</span>
           </div>
         </div>
         <!-- Saving indicator -->
         <div 
           v-if="saving" 
-          class="absolute top-2 right-2 flex items-center text-sm text-gray-500"
+          class="absolute top-2 right-2 flex items-center text-sm text-gray-500 dark:text-gray-400"
         >
-          <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-400 mr-2"></div>
+          <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-400 dark:border-gray-500 mr-2"></div>
           Saving...
         </div>
       </div>
       
       <div class="space-y-6">
         <!-- Base Points Section -->
-        <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-          <h2 class="font-bold mb-4 text-gray-800 flex items-center">
-            <span class="text-red-500 mr-2">-1</span> Point Deductions
+        <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
+          <h2 class="font-bold mb-4 text-gray-800 dark:text-gray-100 flex items-center">
+            <span class="text-red-500 dark:text-red-400 mr-2">-1</span> Point Deductions
           </h2>
           <div class="space-y-3">
             <!-- Bad Meals Counter -->
-            <div class="flex items-center space-x-3 p-3 border border-gray-200 rounded-xl">
+            <div class="flex items-center space-x-3 p-3 border border-gray-200 dark:border-gray-700 rounded-xl">
               <span class="text-2xl">🍔</span>
-              <span class="flex-1">Fast Food</span>
+              <span class="flex-1 text-gray-700 dark:text-gray-300">Fast Food</span>
               <div class="flex items-center space-x-2">
                 <button @click="decrement('badMeals')" 
-                  class="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 hover:bg-gray-50"
-                  :disabled="score.badMeals === 0">
+                  class="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
+                  :disabled="score.badMeals === 0"
+                >
                   -
                 </button>
                 <span class="w-8 text-center">{{ score.badMeals }}</span>
                 <button @click="increment('badMeals')" 
-                  class="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 hover:bg-gray-50">
+                  class="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
+                >
                   +
                 </button>
               </div>
             </div>
             
             <!-- Alcohol Counter -->
-            <div class="flex items-center space-x-3 p-3 border border-gray-200 rounded-xl">
+            <div class="flex items-center space-x-3 p-3 border border-gray-200 dark:border-gray-700 rounded-xl">
               <span class="text-2xl">🍺</span>
-              <span class="flex-1">Alcohol</span>
+              <span class="flex-1 text-gray-700 dark:text-gray-300">Alcohol</span>
               <div class="flex items-center space-x-2">
                 <button @click="decrement('alcohol')" 
-                  class="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 hover:bg-gray-50"
-                  :disabled="score.alcohol === 0">
+                  class="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
+                  :disabled="score.alcohol === 0"
+                >
                   -
                 </button>
                 <span class="w-8 text-center">{{ score.alcohol }}</span>
                 <button @click="increment('alcohol')" 
-                  class="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 hover:bg-gray-50">
+                  class="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
+                >
                   +
                 </button>
               </div>
             </div>
             
             <!-- Snacks Counter -->
-            <div class="flex items-center space-x-3 p-3 border border-gray-200 rounded-xl">
+            <div class="flex items-center space-x-3 p-3 border border-gray-200 dark:border-gray-700 rounded-xl">
               <span class="text-2xl">🍪</span>
-              <span class="flex-1">Snacks</span>
+              <span class="flex-1 text-gray-700 dark:text-gray-300">Snacks</span>
               <div class="flex items-center space-x-2">
                 <button @click="decrement('snacks')" 
-                  class="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 hover:bg-gray-50"
-                  :disabled="score.snacks === 0">
+                  class="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
+                  :disabled="score.snacks === 0"
+                >
                   -
                 </button>
                 <span class="w-8 text-center">{{ score.snacks }}</span>
                 <button @click="increment('snacks')" 
-                  class="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 hover:bg-gray-50">
+                  class="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
+                >
                   +
                 </button>
               </div>
@@ -293,29 +299,29 @@ onUnmounted(() => {
         </div>
         
         <!-- Bonus Points Section -->
-        <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-          <h2 class="font-bold mb-4 text-gray-800 flex items-center">
-            <span class="text-green-500 mr-2">+1</span> Bonus Points
+        <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
+          <h2 class="font-bold mb-4 text-gray-800 dark:text-gray-100 flex items-center">
+            <span class="text-green-500 dark:text-green-400 mr-2">+1</span> Bonus Points
           </h2>
           <div class="space-y-3">
             <button 
               @click="toggleBonus('exercise')"
-              class="w-full p-3 border border-gray-200 rounded-xl text-left hover:bg-gray-50 hover:border-gray-300 transition-all duration-200 flex items-center group"
-              :class="{ 'bg-green-50 border-green-200': score.exercise }"
+              class="w-full p-3 border border-gray-200 dark:border-gray-700 rounded-xl text-left hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-300 dark:hover:border-gray-600 transition-all duration-200 flex items-center group"
+              :class="{ 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800': score.exercise }"
             >
               <span class="text-2xl mr-3">🏃‍♂️</span>
-              <span class="flex-1">Exercise</span>
-              <span class="text-green-500" :class="score.exercise ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'">+1</span>
+              <span class="flex-1 text-gray-700 dark:text-gray-300">Exercise</span>
+              <span class="text-green-500 dark:text-green-400" :class="score.exercise ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'">+1</span>
             </button>
             
             <button 
               @click="toggleBonus('greens')"
-              class="w-full p-3 border border-gray-200 rounded-xl text-left hover:bg-gray-50 hover:border-gray-300 transition-all duration-200 flex items-center group"
-              :class="{ 'bg-green-50 border-green-200': score.greens }"
+              class="w-full p-3 border border-gray-200 dark:border-gray-700 rounded-xl text-left hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-300 dark:hover:border-gray-600 transition-all duration-200 flex items-center group"
+              :class="{ 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800': score.greens }"
             >
               <span class="text-2xl mr-3">🥬</span>
-              <span class="flex-1">Greens with Meals</span>
-              <span class="text-green-500" :class="score.greens ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'">+1</span>
+              <span class="flex-1 text-gray-700 dark:text-gray-300">Greens with Meals</span>
+              <span class="text-green-500 dark:text-green-400" :class="score.greens ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'">+1</span>
             </button>
           </div>
         </div>
