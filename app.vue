@@ -57,9 +57,11 @@ const route = useRoute()
 watch([() => authInitialized.value, () => user.value], ([initialized, currentUser]) => {
   if (!initialized) return
   
-  if (!currentUser && !route.path.startsWith('/login')) {
+  // Only redirect to login if we're sure the user isn't authenticated
+  if (!currentUser && !route.path.startsWith('/login') && initialized) {
     router.push('/login')
   } else if (currentUser && route.path === '/') {
+    // Only redirect to activity if we're on the root path
     router.push('/activity')
   }
 }, { immediate: true })
