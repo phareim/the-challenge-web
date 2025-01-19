@@ -156,6 +156,28 @@ const handleSignOut = async () => {
     console.error('Failed to sign out:', error)
   }
 }
+
+// Add keyboard navigation
+const handleKeydown = (e: KeyboardEvent) => {
+  // Ignore if we're in an input field
+  if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+    return
+  }
+  
+  if (e.key === 'ArrowLeft') {
+    changeDate(-1)
+  } else if (e.key === 'ArrowRight' && !isToday.value) {
+    changeDate(1)
+  }
+}
+
+onMounted(() => {
+  window.addEventListener('keydown', handleKeydown)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('keydown', handleKeydown)
+})
 </script>
 
 <template>
