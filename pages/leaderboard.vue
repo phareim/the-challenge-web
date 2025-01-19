@@ -89,7 +89,7 @@ const getCurrentMonthData = async () => {
 
     // Filter out errors and sort by points
     leaderboard.value = userScores
-      .filter(score => score !== null)
+      .filter(score => score !== null && score.totalPoints > 0)
       .sort((a, b) => b!.totalPoints - a!.totalPoints)
 
   } catch (e) {

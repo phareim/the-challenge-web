@@ -313,22 +313,6 @@ onMounted(() => {
         <p v-else class="text-gray-400 dark:text-gray-500 italic">No health goal set</p>
       </div>
 
-      <!-- Add before Account Info section -->
-      <!--div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
-        <div class="flex justify-between items-center">
-          <div>
-            <h3 class="font-bold text-gray-800 dark:text-gray-200">Appearance</h3>
-            <p class="text-sm text-gray-500 dark:text-gray-400">Toggle dark mode</p>
-          </div>
-          <button 
-            @click="toggleDarkMode"
-            class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-          >
-            <span class="text-2xl">{{ isDark ? '🌙' : '☀️' }}</span>
-          </button>
-        </div>
-      </div-->
-
       <!-- Account Info -->
       <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
         <h3 class="font-bold text-gray-800 dark:text-gray-100 mb-4">Account Information</h3>
