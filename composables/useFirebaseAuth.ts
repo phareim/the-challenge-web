@@ -4,7 +4,8 @@ import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signO
 export const useFirebaseAuth = () => {
   const config = useRuntimeConfig()
   const user = useState<User | null>('user', () => null)
-  const loading = useState<boolean>('auth-loading', () => true)
+  const loading = ref(false)
+  const authInitialized = ref(false)
 
   // Initialize Firebase
   const app = initializeApp(config.public.firebase)
@@ -17,7 +18,9 @@ export const useFirebaseAuth = () => {
     const unsubscribe = onAuthStateChanged(auth, (newUser) => {
       console.log('Auth state changed:', { userId: newUser?.uid })
       user.value = newUser
-      loading.value = false
+      if (!authInitialized.value) {
+        authInitialized.value = true
+      }
     })
 
     // Cleanup on unmount
@@ -57,6 +60,7 @@ export const useFirebaseAuth = () => {
   return {
     user,
     loading,
+    authInitialized,
     signInWithGoogle,
     signOutUser
   }

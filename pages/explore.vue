@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useRouter } from 'vue-router'
+
 definePageMeta({
   middleware: ['auth']
 })
@@ -7,6 +9,7 @@ const { getAllActivities } = useFirestore()
 const loading = ref(true)
 const error = ref('')
 const activities = ref<any[]>([])
+const router = useRouter()
 
 // Process activities for visualization
 const processedActivities = computed(() => {
@@ -75,6 +78,10 @@ const formatDate = (dateString: string) => {
   })
 }
 
+const navigateToDay = (date: string) => {
+  router.push(`/activity?date=${date}`)
+}
+
 // Load activities
 const loadActivities = async () => {
   loading.value = true
@@ -131,13 +138,14 @@ onMounted(() => {
         <h3 class="font-bold text-gray-800 mb-4">Activity History</h3>
         <div class="grid grid-cols-7 gap-2">
           <template v-for="score in processedActivities.dailyScores" :key="score.date">
-            <div 
-              class="aspect-square rounded-lg p-2 flex flex-col items-center justify-center text-center"
+            <button 
+              @click="navigateToDay(score.date)"
+              class="aspect-square rounded-lg p-2 flex flex-col items-center justify-center text-center hover:opacity-75 transition-opacity cursor-pointer"
               :class="getScoreColor(score.score)"
             >
               <div class="text-lg font-bold">{{ score.score }}</div>
               <div class="text-xs">{{ formatDate(score.date) }}</div>
-            </div>
+            </button>
           </template>
         </div>
       </div>

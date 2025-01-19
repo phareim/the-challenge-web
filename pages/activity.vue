@@ -2,17 +2,39 @@
 import type { Activity } from '~/types/activity'
 import { useFirebaseAuth } from '~/composables/useFirebaseAuth'
 import { useFirestore } from '~/composables/useFirestore'
+import { useRoute } from 'vue-router'
 
 definePageMeta({
   middleware: ['auth']
 })
 
-const activities = useActivities()
-const currentDate = ref(new Date())
+const { user, authInitialized } = useFirebaseAuth()
+const { getActivity, saveActivity } = useFirestore()
+const route = useRoute()
+
+// Initialize currentDate from URL query if available
+const currentDate = ref(
+  route.query.date 
+    ? new Date(route.query.date as string)
+    : new Date()
+)
+
 const loading = ref(true)
 const saving = ref(false)
 const { signOutUser } = useFirebaseAuth()
 
+// Default score state
+const defaultScore = {
+  badMeals: 0,
+  alcohol: 0,
+  snacks: 0,
+  exercise: false,
+  greens: false
+}
+
+const score = ref({ ...defaultScore })
+
+// Computed properties
 const formattedDate = computed(() => {
   const date = currentDate.value
   return date.toLocaleDateString('en-US', { 
@@ -31,38 +53,12 @@ const isToday = computed(() => {
   return currentDate.value.toDateString() === today.toDateString()
 })
 
-// Default score state
-const defaultScore = {
-  badMeals: 0,
-  alcohol: 0,
-  snacks: 0,
-  exercise: false,
-  greens: false
-}
-
-const score = ref({ ...defaultScore })
-
-// Watch for date changes
-watch(dateKey, async () => {
-  await loadActivityForDate()
-})
-
-// Auto-save when score changes
-watch(score, async () => {
-  await saveScore()
-}, { deep: true })
-
-// Navigate between days
-const changeDate = (days: number) => {
-  const newDate = new Date(currentDate.value)
-  newDate.setDate(newDate.getDate() + days)
-  currentDate.value = newDate
-}
-
+// Load activity data
 const loadActivityForDate = async () => {
+  if (!user.value) return
+  
   loading.value = true
   try {
-    const { getActivity, saveActivity } = useFirestore()
     const activity = await getActivity(dateKey.value)
     
     if (activity) {
@@ -81,10 +77,51 @@ const loadActivityForDate = async () => {
   }
 }
 
-// Load initial activity
-onMounted(() => {
-  loadActivityForDate()
+// Save score
+const saveScore = async () => {
+  if (saving.value || !user.value) return
+  
+  saving.value = true
+  try {
+    await saveActivity(dateKey.value, score.value)
+  } catch (error) {
+    console.error('Failed to save activity:', error)
+  } finally {
+    saving.value = false
+  }
+}
+
+// Navigation
+const changeDate = (days: number) => {
+  const newDate = new Date(currentDate.value)
+  newDate.setDate(newDate.getDate() + days)
+  const dateString = newDate.toISOString().split('T')[0]
+  navigateTo(`/activity?date=${dateString}`)
+}
+
+// Watch effects
+watch(() => route.query.date, (newDate) => {
+  if (newDate && typeof newDate === 'string') {
+    const parsedDate = new Date(newDate)
+    // Check if the date is valid before setting it
+    if (!isNaN(parsedDate.getTime())) {
+      currentDate.value = parsedDate
+    }
+  }
 })
+
+watch([() => authInitialized.value, () => user.value, dateKey], async ([initialized, currentUser]) => {
+  if (initialized && currentUser) {
+    await loadActivityForDate()
+  }
+}, { immediate: true })
+
+// Auto-save when score changes
+watch(score, async () => {
+  if (user.value) {
+    await saveScore()
+  }
+}, { deep: true })
 
 const getTotalScore = computed(() => {
   const basePoints = 4
@@ -109,20 +146,6 @@ const decrement = (type: keyof Pick<Activity['score'], 'badMeals' | 'alcohol' | 
 
 const toggleBonus = (type: keyof Pick<Activity['score'], 'exercise' | 'greens'>) => {
   score.value[type] = !score.value[type]
-}
-
-const saveScore = async () => {
-  if (saving.value) return
-  
-  saving.value = true
-  try {
-    const { saveActivity } = useFirestore()
-    await saveActivity(dateKey.value, score.value)
-  } catch (error) {
-    console.error('Failed to save activity:', error)
-  } finally {
-    saving.value = false
-  }
 }
 
 const handleSignOut = async () => {
