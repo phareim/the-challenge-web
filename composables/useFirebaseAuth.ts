@@ -1,33 +1,39 @@
-import { GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, type User } from 'firebase/auth'
+import { initializeApp } from 'firebase/app'
+import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut, type User } from 'firebase/auth'
 
 export const useFirebaseAuth = () => {
-  const { $auth } = useNuxtApp()
-  const user = ref<User | null>(null)
-  const loading = ref(true)
+  const config = useRuntimeConfig()
+  const user = useState<User | null>('user', () => null)
+  const loading = useState<boolean>('auth-loading', () => true)
 
-  onMounted(() => {
-    onAuthStateChanged($auth, (newUser) => {
-      user.value = newUser
-      loading.value = false
-    })
+  // Initialize Firebase
+  const app = initializeApp(config.public.firebase)
+  const auth = getAuth(app)
+  const provider = new GoogleAuthProvider()
+
+  // Watch auth state
+  onAuthStateChanged(auth, (newUser) => {
+    user.value = newUser
+    loading.value = false
   })
 
+  // Sign in with Google
   const signInWithGoogle = async () => {
-    const provider = new GoogleAuthProvider()
     try {
-      const result = await signInWithPopup($auth, provider)
+      const result = await signInWithPopup(auth, provider)
       return result.user
     } catch (error) {
-      console.error('Error signing in with Google:', error)
+      console.error('Google sign in failed:', error)
       throw error
     }
   }
 
-  const logout = async () => {
+  // Sign out
+  const signOutUser = async () => {
     try {
-      await signOut($auth)
+      await signOut(auth)
     } catch (error) {
-      console.error('Error signing out:', error)
+      console.error('Sign out failed:', error)
       throw error
     }
   }
@@ -36,6 +42,6 @@ export const useFirebaseAuth = () => {
     user,
     loading,
     signInWithGoogle,
-    logout
+    signOutUser
   }
 } 

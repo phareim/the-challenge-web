@@ -27,5 +27,7 @@ export default defineNuxtConfig({
     prerender: {
       failOnError: false
     }
-  }
+  },
+
+  compatibilityDate: '2025-01-19'
 })

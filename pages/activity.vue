@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import type { Activity } from '~/types/activity'
+import { useFirebaseAuth } from '~/composables/useFirebaseAuth'
+import { useFirestore } from '~/composables/useFirestore'
 
 definePageMeta({
   middleware: ['auth']
@@ -9,6 +11,7 @@ const activities = useActivities()
 const currentDate = ref(new Date())
 const loading = ref(true)
 const saving = ref(false)
+const { signOutUser } = useFirebaseAuth()
 
 const formattedDate = computed(() => {
   const date = currentDate.value
@@ -59,23 +62,19 @@ const changeDate = (days: number) => {
 const loadActivityForDate = async () => {
   loading.value = true
   try {
-    console.log('Loading activity for date:', dateKey.value)
-    const activity = await activities.getActivity(dateKey.value)
+    const { getActivity, saveActivity } = useFirestore()
+    const activity = await getActivity(dateKey.value)
+    
     if (activity) {
       // Use existing activity
       score.value = { ...activity.score }
     } else {
-      // Create new activity with default score and wait for the response
-      const newActivity = await activities.createActivity({
-        date: dateKey.value,
-        score: defaultScore
-      })
-      // Update the UI with the saved data
-      score.value = { ...newActivity.score }
+      // Create new activity with default score
+      await saveActivity(dateKey.value, defaultScore)
+      score.value = { ...defaultScore }
     }
   } catch (error) {
     console.error('Failed to load activity:', error)
-    // On error, reset to default score
     score.value = { ...defaultScore }
   } finally {
     loading.value = false
@@ -113,17 +112,25 @@ const toggleBonus = (type: keyof Pick<Activity['score'], 'exercise' | 'greens'>)
 }
 
 const saveScore = async () => {
-  if (saving.value) return // Prevent multiple simultaneous saves
+  if (saving.value) return
   
   saving.value = true
   try {
-    await activities.updateActivity(dateKey.value, {
-      score: score.value
-    })
+    const { saveActivity } = useFirestore()
+    await saveActivity(dateKey.value, score.value)
   } catch (error) {
     console.error('Failed to save activity:', error)
   } finally {
     saving.value = false
+  }
+}
+
+const handleSignOut = async () => {
+  try {
+    await signOutUser()
+    navigateTo('/login')
+  } catch (error) {
+    console.error('Failed to sign out:', error)
   }
 }
 </script>
@@ -158,6 +165,14 @@ const saveScore = async () => {
         :disabled="isToday || loading"
       >
         <span class="text-xl" :class="{ 'opacity-50': isToday }">→</span>
+      </button>
+
+      <!-- Add sign out button -->
+      <button 
+        @click="handleSignOut"
+        class="absolute top-4 right-4 px-3 py-1 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
+      >
+        Sign Out
       </button>
     </div>
     
