@@ -44,6 +44,7 @@ export default defineNuxtConfig({
       orientation: 'portrait',
       scope: '/',
       start_url: '/',
+      prefer_related_applications: false,
       icons: [
         {
           src: 'icons/icon-72x72.png',
@@ -73,7 +74,8 @@ export default defineNuxtConfig({
         {
           src: 'icons/icon-192x192.png',
           sizes: '192x192',
-          type: 'image/png'
+          type: 'image/png',
+          purpose: 'any maskable'
         },
         {
           src: 'icons/icon-384x384.png',
@@ -90,11 +92,26 @@ export default defineNuxtConfig({
     workbox: {
       navigateFallback: '/',
       globPatterns: ['**/*.{js,css,html,png,svg,ico}'],
+      runtimeCaching: [
+        {
+          urlPattern: /^https:\/\/firestore\.googleapis\.com\/.*/i,
+          handler: 'NetworkFirst',
+          options: {
+            cacheName: 'firestore-cache',
+            expiration: {
+              maxEntries: 100,
+              maxAgeSeconds: 60 * 60 * 24 // 24 hours
+            }
+          }
+        }
+      ]
     },
     devOptions: {
       enabled: true,
       type: 'module'
-    }
+    },
+    includeAssets: ['icons/*'],
+    registerType: 'autoUpdate'
   },
 
   app: {
@@ -102,12 +119,18 @@ export default defineNuxtConfig({
       title: 'Health Challenge',
       meta: [
         { charset: 'utf-8' },
-        { name: 'viewport', content: 'width=device-width, initial-scale=1' },
+        { name: 'viewport', content: 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no' },
         { name: 'description', content: 'Track your daily health goals and compete with friends' },
-        { name: 'theme-color', content: '#ffffff' }
+        { name: 'theme-color', content: '#ffffff' },
+        { name: 'format-detection', content: 'telephone=no' },
+        { name: 'apple-mobile-web-app-capable', content: 'yes' },
+        { name: 'apple-mobile-web-app-status-bar-style', content: 'black-translucent' },
+        { name: 'apple-mobile-web-app-title', content: 'Health Challenge' }
       ],
       link: [
-        { rel: 'icon', type: 'image/png', href: '/icons/icon-72x72.png' }
+        { rel: 'icon', type: 'image/png', href: '/icons/icon-72x72.png' },
+        { rel: 'apple-touch-icon', href: '/icons/icon-192x192.png' },
+        { rel: 'apple-touch-startup-image', href: '/icons/icon-512x512.png' }
       ]
     }
   }
