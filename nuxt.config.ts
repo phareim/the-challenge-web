@@ -119,12 +119,16 @@ export default defineNuxtConfig({
       title: 'Health Challenge',
       meta: [
         { charset: 'utf-8' },
-        { name: 'viewport', content: 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no' },
+        { 
+          name: 'viewport', 
+          content: 'width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover, user-scalable=no'
+        },
         { name: 'description', content: 'Track your daily health goals and compete with friends' },
         { name: 'theme-color', content: '#ffffff' },
         { name: 'format-detection', content: 'telephone=no' },
         { name: 'apple-mobile-web-app-capable', content: 'yes' },
         { name: 'apple-mobile-web-app-status-bar-style', content: 'black-translucent' },
+        { name: 'apple-touch-fullscreen', content: 'yes' },
         { name: 'apple-mobile-web-app-title', content: 'Health Challenge' }
       ],
       link: [
