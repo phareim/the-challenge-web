@@ -26,6 +26,48 @@ const loading = ref(true)
 const error = ref('')
 const leaderboard = ref<any[]>([])
 
+// Add selected month state
+const selectedDate = ref(new Date())
+const MIN_DATE = new Date('2025-01-01')
+
+// Format month for display
+const formattedMonth = computed(() => {
+  return selectedDate.value.toLocaleString('default', { 
+    month: 'long',
+    year: 'numeric'
+  })
+})
+
+// Check if we're at the minimum date
+const isMinDate = computed(() => {
+  const current = selectedDate.value
+  return current.getMonth() === MIN_DATE.getMonth() && 
+         current.getFullYear() === MIN_DATE.getFullYear()
+})
+
+// Check if we're at the current month
+const isCurrentMonth = computed(() => {
+  const now = new Date()
+  const current = selectedDate.value
+  return current.getMonth() === now.getMonth() && 
+         current.getFullYear() === now.getFullYear()
+})
+
+// Navigation functions
+const changeMonth = (delta: number) => {
+  const newDate = new Date(selectedDate.value)
+  newDate.setMonth(newDate.getMonth() + delta)
+  
+  // Don't go before minimum date
+  if (newDate < MIN_DATE) return
+  
+  // Don't go beyond current month
+  const now = new Date()
+  if (newDate > now) return
+  
+  selectedDate.value = newDate
+}
+
 // Calculate score for an activity
 const calculateScore = (score: ActivityScore) => {
   const basePoints = 4
@@ -34,8 +76,8 @@ const calculateScore = (score: ActivityScore) => {
   return Math.max(0, basePoints - deductions) + bonusPoints
 }
 
-// Get current month's data
-const getCurrentMonthData = async () => {
+// Get month's data
+const getMonthData = async () => {
   loading.value = true
   error.value = ''
   
@@ -43,10 +85,9 @@ const getCurrentMonthData = async () => {
     // Get all users
     const users = await getAllUsers()
     
-    // Get current month bounds
-    const now = new Date()
-    const currentMonth = now.getMonth()
-    const currentYear = now.getFullYear()
+    // Get selected month bounds
+    const targetMonth = selectedDate.value.getMonth()
+    const targetYear = selectedDate.value.getFullYear()
     
     // Process each user's activities
     const userScores = await Promise.all(users.map(async user => {
@@ -59,10 +100,10 @@ const getCurrentMonthData = async () => {
           ...doc.data()
         } as Activity))
 
-        // Filter for current month and calculate stats
+        // Filter for selected month and calculate stats
         const monthActivities = activities.filter(activity => {
           const date = new Date(activity.date)
-          return date.getMonth() === currentMonth && date.getFullYear() === currentYear
+          return date.getMonth() === targetMonth && date.getFullYear() === targetYear
         })
 
         const totalPoints = monthActivities.reduce((sum, activity) => 
@@ -100,22 +141,49 @@ const getCurrentMonthData = async () => {
   }
 }
 
-// Get current month name
-const currentMonth = computed(() => {
-  return new Date().toLocaleString('default', { month: 'long' })
+// Watch for month changes
+watch(selectedDate, () => {
+  getMonthData()
 })
 
 // Load data on mount
 onMounted(() => {
-  getCurrentMonthData()
+  getMonthData()
 })
 </script>
 
 <template>
   <div class="p-4 max-w-3xl mx-auto">
-    <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-6 text-center">
-      {{ currentMonth }} Leaderboard
-    </h1>
+    <!-- Month Navigation -->
+    <div class="flex items-center justify-between mb-6">
+      <button 
+        @click="changeMonth(-1)"
+        class="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+        :disabled="loading || isMinDate"
+      >
+        <span class="text-xl" :class="{ 'opacity-50': isMinDate }">←</span>
+      </button>
+      
+      <div class="text-center">
+        <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100">
+          {{ formattedMonth }}
+        </h1>
+        <span class="text-sm text-gray-500 dark:text-gray-400" v-if="!isCurrentMonth">
+          {{ isMinDate ? 'Earliest available month' : 'Tap arrows to navigate' }}
+        </span>
+        <span class="text-sm text-blue-500 dark:text-blue-400 font-medium" v-else>
+          Current Month
+        </span>
+      </div>
+      
+      <button 
+        @click="changeMonth(1)"
+        class="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+        :disabled="isCurrentMonth || loading"
+      >
+        <span class="text-xl" :class="{ 'opacity-50': isCurrentMonth }">→</span>
+      </button>
+    </div>
 
     <div v-if="loading" class="py-12 text-center">
       <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 dark:border-blue-400 mx-auto"></div>
@@ -124,7 +192,7 @@ onMounted(() => {
     <div v-else-if="error" class="text-center py-12">
       <div class="text-red-600 dark:text-red-400 mb-4">{{ error }}</div>
       <button 
-        @click="getCurrentMonthData"
+        @click="getMonthData"
         class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"
       >
         Try Again
